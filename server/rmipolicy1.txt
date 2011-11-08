@@ -1,0 +1,8 @@
+// To run the server
+// java -Djava.server.rmi.codebase=http://osprey.unf.edu/~sahuja/rmi/
+//                      -Djava.security.policy=rmipolicy1.txt  RegAccount
+
+grant {
+        permission java.net.SocketPermission "*:1024-65535", "accept,connect";
+};                  
+

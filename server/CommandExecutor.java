@@ -1,3 +1,5 @@
+import java.rmi.server.UnicastRemoteObject;
+import java.rmi.RemoteException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -7,7 +9,10 @@ import java.io.InputStreamReader;
  * received from the server and converting that into its respective Linux shell command, 
  * then executing it and returning the results.
  */
-public class CommandExecutor {
+public class CommandExecutor extends UnicastRemoteObject implements CommandExecutorInterface {
+
+	public CommandExecutor() throws RemoteException {
+	}
 
 	/**
 	 * Runs the shell command after first using parseCommand() to determine which
@@ -16,7 +21,7 @@ public class CommandExecutor {
 	 * @param commandString		A string containing a single digit, 1-6;
 	 * @return			A string containing the results of the shell command.
 	 */
-	static String run(String commandString) {
+	public String run(String commandString)  {
 		String result = "";
 		String line;
 		try {
@@ -50,7 +55,7 @@ public class CommandExecutor {
 	 * @param inputString		A string containing a single digit, 1-6;
 	 * @return			A string containing the shell command to run		
 	 */
-	static String parseCommand(String inputString) {
+	private String parseCommand(String inputString) {
 		int inputInt = Integer.parseInt(inputString);
 		String commandString = "";
 		switch (inputInt) {

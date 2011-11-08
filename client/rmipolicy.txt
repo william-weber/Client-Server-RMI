@@ -1,0 +1,4 @@
+grant {
+        permission java.net.SocketPermission "atlas.ccec.unf.edu", "accept,connect";
+        permission java.net.SocketPermission "localhost", "accept,connect";
+};

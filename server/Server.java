@@ -1,3 +1,7 @@
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.Naming;
+import java.rmi.RMISecurityManager;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -15,32 +19,20 @@ public class Server {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		AtomicInteger numThreads = new AtomicInteger(0);
-		// the list of threads is kept in a linked list
-		ArrayList<Thread> list = new ArrayList<Thread>();
-		
 		try {
-			// listen for incoming connections on port 15432
-			ServerSocket socket = new ServerSocket(15432);
-			System.out.println("Server listening on port 15432");
+			//install a security manager
+			System.setSecurityManager(new RMISecurityManager());
+			Registry.LocateRegistry();
 
-			// loop (forever) until program is stopped
-			while(true) {
-				// accept a new connection
-				Socket client = socket.accept();
-				// start a new ServerThread to handle the connection and send
-				// output to the client
-				Thread thrd = new Thread(new ServerThread(client));
-				list.add(thrd);
-				thrd.start();
-				numThreads.incrementAndGet();
-				System.out.println("Thread " + numThreads.get() + " started.");
+			//make a command executor with the given name
+			CommandExecutor ce = new CommandExecutor();
+			//register it with the local naming registry
+			Naming.rebind("executor", ce);
+			System.out.println("Registered command executor");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
-			}
-		}
-		catch (IOException ioe){
-			ioe.printStackTrace();
-		}
 	}
 }
 
