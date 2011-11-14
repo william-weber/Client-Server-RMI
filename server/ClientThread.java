@@ -1,19 +1,13 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.net.ConnectException;
 import java.util.concurrent.atomic.AtomicLong;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.util.Scanner;
 
 
 public class ClientThread extends Thread {
 	// every clientThread is passed which command to send to the server
 	int menuSelection;
-	// every clientThread is passed the hostname of the server to connect to
 	String hostName;
-	Socket socket = null; 
 	
 	// totalTime is used to keep the sum of response times for all threads. after all threads
 	// have completed it is divided by the total number of threads to get an 
@@ -45,35 +39,24 @@ public class ClientThread extends Thread {
 	}
 
 	public void run() {
-		PrintWriter out = null;
-		BufferedReader input = null;
 		try {
-			//creates a new Socket object and names it socket.
-			//Establishes the socket connection between the client & server
-			//name of the machine & the port number to which we want to connect
-			socket = new Socket(hostName, 15432);
+			Registry registry = LocateRegistry.getRegistry(hostName, 15432);
+			CommandExecutorInterface ce = (CommandExecutorInterface) registry.lookup("ce");
 			if (printOutput) {
 				System.out.print("Establishing connection.");
 			}
-			//opens a PrintWriter on the socket input autoflush mode
-			out = new PrintWriter(socket.getOutputStream(), true);
 
-			//opens a BufferedReader on the socket
-			input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			if (printOutput) System.out.println("\nRequesting output for the '" + menuSelection + "' command from " + hostName);
 			
 			// get the current time (before sending the request to the server)
 			startTime = System.currentTimeMillis();
 
 			// send the command to the server
-			out.println(Integer.toString(menuSelection));
+			String outputString = ce.run(Integer.toString(menuSelection));
 			if (printOutput) System.out.println("Sent output");
 
-			// read the output from the server
-			String outputString;
-			while (((outputString = input.readLine()) != null) && (!outputString.equals("END_MESSAGE"))) {
-				if (printOutput) System.out.println(outputString);
-			}
+			// print the output from the server
+			if (printOutput) System.out.println(outputString);
 
 			// get the current time (after connecting to the server)
 			endTime = System.currentTimeMillis();
@@ -81,28 +64,13 @@ public class ClientThread extends Thread {
 			totalTime.addAndGet(endTime - startTime);
 
 		}
-		catch (UnknownHostException e) {
-			System.err.println("Unknown host: " + hostName);
-			System.exit(1);
-		}
-		catch (ConnectException e) {
-			System.err.println("Connection refused by host: " + hostName);
-			System.exit(1);
-		}
-		catch (IOException e) {
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 		// finally, close the socket and decrement runningThreads
 		finally {
-			if (printOutput) System.out.println("closing");
-			try {
-				socket.close();
-				runningThreads.decrementAndGet();
-				System.out.flush();
-			}
-			catch (IOException e ) {
-				System.out.println("Couldn't close socket");
-			}
+			if (printOutput) System.out.println("Thread finished.");
+			runningThreads.decrementAndGet();
 		}
 
 	}

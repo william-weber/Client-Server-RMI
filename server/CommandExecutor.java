@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
  * received from the server and converting that into its respective Linux shell command, 
  * then executing it and returning the results.
  */
-public class CommandExecutor extends UnicastRemoteObject implements CommandExecutorInterface {
+public class CommandExecutor implements CommandExecutorInterface {
 
 	public CommandExecutor() throws RemoteException {
 	}
